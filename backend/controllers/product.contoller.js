@@ -63,54 +63,90 @@ export const createProduct = async (req, res) => {
 
 export const deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id)
+    const product = await Product.findById(req.params.id);
 
-    if(!product){
-      return res.status(404).json({message:"Product not found"})
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
 
-    if(product.image){
-      const publicId = product.image.split("/").pop().split(".")[0]
+    if (product.image) {
+      const publicId = product.image.split("/").pop().split(".")[0];
       try {
-        await cloudinary.uploader.destroy(`products/${publicId}`)
-        console.log("deleted the image from cloudinary")
+        await cloudinary.uploader.destroy(`products/${publicId}`);
+        console.log("deleted the image from cloudinary");
       } catch (error) {
-        console.log("error deleting the image from cloudinary")
+        console.log("error deleting the image from cloudinary");
       }
     }
 
-    await Product.findByIdAndDelete(req.params.id)
+    await Product.findByIdAndDelete(req.params.id);
 
-    res.json({message:"Product deleted successfully!"})
-
+    res.json({ message: "Product deleted successfully!" });
   } catch (error) {
-    console.log("Error in the delete products controller")
-    res.status(500).json({message:"server error" , error:error.message})
+    console.log("Error in the delete products controller");
+    res.status(500).json({ message: "server error", error: error.message });
   }
 };
 
-export const getRecommendedProducts = async (req,res) => {
+export const getRecommendedProducts = async (req, res) => {
   try {
     const products = await Product.aggregate([
       {
-        $sample: {size:3}
+        $sample: { size: 3 },
       },
       {
-         $project:{
-          _id:1,
-          name:1,
-          description:1,
-          image:1,
-          price:1
-         }
-      }
-    ])
+        $project: {
+          _id: 1,
+          name: 1,
+          description: 1,
+          image: 1,
+          price: 1,
+        },
+      },
+    ]);
 
-    res.json(products)
-
+    res.json(products);
   } catch (error) {
-    console.log("error in the recommendation controller")
-    res.status(500).json({message:"server error" , error:error.message})
+    console.log("error in the recommendation controller");
+    res.status(500).json({ message: "server error", error: error.message });
+  }
+};
+
+export const getProductsByCategory = async (req, res) => {
+  const { category } = req.params;
+  try {
+    const products = await Product.find({ category });
+    res.json(products);
+  } catch (error) {
+    console.log("Error inside the category controller");
+    res.status(500).json({ message: "server error", error: error.message });
+  }
+};
+
+export const toggleFeaturedProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      product.isFeatured = !product.isFeatured;
+      const updatedProduct = await product.save();
+
+      await updateFeaturedProductCache();
+      res.json(updatedProduct);
+    } else {
+      res.status(404).json({ message: "Product not found" });
+    }
+  } catch (error) {
+    console.log("Error inside the toggleFeaturedProduct controller.");
+    res.status(500).json({ message: "server error", error: error.message });
+  }
+};
+
+async function updateFeaturedProductCache() {
+  try {
+    const featuredProducts = await Product.find({ isFeatured: true }).lean();
+    await redis.set("featured products", JSON.stringify(featuredProducts));
+  } catch (error) {
+    console.log("error in the update featured prod function");
+    res.status(500).json({ message: "server error", error: error.message });
   }
 }
-
