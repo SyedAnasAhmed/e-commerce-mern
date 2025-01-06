@@ -44,10 +44,12 @@ export const signup = async (req, res) => {
     const userExists = await User.findOne({ email });
 
     if (userExists) {
+      console.log("user already exists")
       return res.status(400).json({ message: "User already exists" });
     }
+    console.log("Request body:", { name, email, password });
     const user = await User.create({ name, email, password });
-
+    console.log("controller")
     const { accessToken, refreshToken } = generateTokens(user._id);
     await storeRefreshToken(user._id, refreshToken);
 

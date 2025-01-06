@@ -6,7 +6,6 @@ import { UserPlus, Mail, Lock, User, ArrowRight, Loader } from "lucide-react";
 import { useUserStore } from "../stores/useUserStore.js";
 
 const SignUpPage = () => {
-  const loading = false;
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -14,11 +13,17 @@ const SignUpPage = () => {
     confirmPassword: "",
   });
 
-  const {signup ,user} = useUserStore()
+  const { signup, loading } = useUserStore();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    signup(formData);
+    signup(
+      formData.name,
+      formData.email,
+      formData.password,
+      formData.confirmPassword
+    );
+    console.log(formData);
   };
   return (
     <div className="flex flex-col justifycenter py-2 sm:px-6 lg:px-8 ">

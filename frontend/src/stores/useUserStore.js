@@ -15,15 +15,22 @@ export const useUserStore = create((set, get) => ({
     }
 
     try {
-      const res = await axios.post("/auth/signup", {
-        name: typeof name === "string" ? name : name.name,
-        email: typeof email === "string" ? email : email.email,
-        password: typeof password === "string" ? password : password.password,
-      });
-      set({ user: res.data.user, loading: false });
+        const res = await axios.post("/auth/signup", { name, email, password });
+        set({ user: res.data, loading: false });
     } catch (error) {
       set({ loading: false });
-      toast.error(error.response.data.message || "An error occured");
+      toast.error(error.message || "An error occured");
+    }
+  },
+  login: async ( email, password) => {
+    set({ loading: true });
+
+    try {
+        const res = await axios.post("/auth/login", { email, password });
+        set({ user: res.data, loading: false });
+    } catch (error) {
+      set({ loading: false });
+      toast.error(error.message || "An error occured");
     }
   },
 }));
