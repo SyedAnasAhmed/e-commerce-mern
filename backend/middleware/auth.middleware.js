@@ -10,7 +10,7 @@ export const protectedRoute = async (req, res, next) => {
         .status(401)
         .json({ message: "Unauthorized, No token provided!" });
     }
-                   
+
     try {
       const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
       const user = await User.findById(decoded.userId).select("password");
@@ -34,11 +34,22 @@ export const protectedRoute = async (req, res, next) => {
   }
 };
 
-export const adminRoute =async (req,res,next) =>{
-  if(req.user && req.user.role === "admin"){
-    next()
+export const adminRoute = async (req, res, next) => {
+  const accessToken = req.cookies.accessToken;
+  const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+  const user = await User.findById(decoded.userId);
+
+  if (!accessToken) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized, No token provided!" });
   }
-  else{
-    return res.status(403).json({message: "Access denied - Admin Only!"})
+
+  console.log(user.role);
+  if (user && user.role === "admin") {
+    next();
+  } else {
+    console.log("error by the admin route");
+    return res.status(403).json({ message: "Access denied - Admin Only!" });
   }
-}
+};
