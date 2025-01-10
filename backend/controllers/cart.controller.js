@@ -1,4 +1,5 @@
 import Product from "../models/product.model.js";
+import User from "../models/user.model.js";
 
 export const getCartProducts = async (req, res) => {
   try {
@@ -23,15 +24,21 @@ export const addToCart = async (req, res) => {
     const { productId } = req.body;
     const user = req.user;
 
-    const existingItem = user.cartItems.find((item) => item.id === productId);
+    const thisUser = await User.findById(user._id);
+    console.log("errror nh hai", thisUser.cartItems);
+    
+    const existingItem = thisUser.cartItems.find((item) => item.toString() === productId);
+
+    console.log(existingItem, "console")
+
     if (existingItem) {
       existingItem.quantity += 1;
     } else {
-      user.cartItems.push(productId);
+      thisUser.cartItems.push(productId);
     }
-
-    await user.save();
-    res.json(user.cartItems);
+    await thisUser.save();
+    console.log(thisUser)
+    res.json(thisUser.cartItems);
   } catch (error) {
     console.log("Error inside the addtocart controller");
     res.status(500).json({ message: "server error", error: error.message });
