@@ -48,7 +48,9 @@ export const addToCart = async (req, res) => {
 export const removeAllFromCart = async (req, res) => {
   try {
     const { productId } = req.body;
-    const user = req.user;
+    console.log(productId)
+    const user = await User.findById(req.user._id);
+    console.log("user" , user)
     if (!productId) {
       user.cartItems = [];
     } else {
