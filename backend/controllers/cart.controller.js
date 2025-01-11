@@ -27,14 +27,16 @@ export const addToCart = async (req, res) => {
     const thisUser = await User.findById(user._id);
     console.log("errror nh hai", thisUser.cartItems);
 
-    const existingItem = thisUser.cartItems.find((item) => item.product.toString() === productId);
+    const existingItem = thisUser.cartItems.find(
+      (item) => item.product.toString() === productId
+    );
     console.log(existingItem, "console");
 
     if (existingItem) {
       existingItem.quantity += 1;
     } else {
       // thisUser.cartItems.push(productId);
-      thisUser.cartItems.push({ product: productId, quantity: 1 })
+      thisUser.cartItems.push({ product: productId, quantity: 1 });
     }
     await thisUser.save();
     console.log(thisUser);
@@ -48,9 +50,9 @@ export const addToCart = async (req, res) => {
 export const removeAllFromCart = async (req, res) => {
   try {
     const { productId } = req.body;
-    console.log(productId)
+    console.log(productId);
     const user = await User.findById(req.user._id);
-    console.log("user" , user)
+    console.log("user", user);
     if (!productId) {
       user.cartItems = [];
     } else {
@@ -68,12 +70,17 @@ export const updateQuantity = async (req, res) => {
   try {
     const { id: productId } = req.params;
     const { quantity } = req.body;
-    const user = req.user;
-    const existingItem = user.cartItems.find((item) => item.id === productId);
+    const user = await User.findById(req.user._id);
+
+    // const existingItem = user.cartItems.find((item) => item.id === productId);
+    const existingItem = user.cartItems.find((item) => item.product.toString() === productId);
+
+    console.log("updqua:", existingItem);
 
     if (existingItem) {
       if (quantity === 0) {
         user.cartItems = user.cartItems.filter((item) => item.id !== productId);
+        console.log("after the updation")
         await user.save();
         return res.json(user.cartItems);
       }
