@@ -14,15 +14,16 @@ import { useCartStore } from "./stores/useCartStore";
 
 function App() {
   const { user, checkAuth, checkingAuth } = useUserStore();
-  const {getCartItems} = useCartStore()
+  const { getCartItems } = useCartStore();
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
-  useEffect(()=>{
-    getCartItems()
-  },[])
+  useEffect(() => {
+    if (!user) return;
+    getCartItems();
+  }, [user]);
 
   if (checkingAuth) return <LoadingSpinner />;
 
@@ -57,7 +58,10 @@ function App() {
             }
           />
           <Route path="/category/:category" element={<CategoryPage />} />
-          <Route path="/cart" element={user ? <CartPage /> : <Navigate to={"/login"}/> } />
+          <Route
+            path="/cart"
+            element={user ? <CartPage /> : <Navigate to={"/login"} />}
+          />
         </Routes>
       </div>
       <Toaster />
