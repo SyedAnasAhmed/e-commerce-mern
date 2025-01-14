@@ -16,20 +16,53 @@ const OrderSummary = () => {
   const formattedTotal = total.toFixed(2);
   const fomattedSavings = savings.toFixed(2);
 
+  // const handlePayment = async () => {
+  //   const stripe = stripePromise;
+  //   const res = await axios.post("/payments/create-checkout-session", {
+  //     products: cart,
+  //     coupon: coupon ? coupon.code : null,
+  //   });
+  //   // const session = res.data;
+  //   // const result = await stripe.redirectToCheckout({
+  //   //   sessionId: session.id,
+  //   //   url: session.url,
+  //   // });
+
+  //   // window.location.href = session.url
+
+  //   const urlParams = new URLSearchParams(window.location.search);
+  //   const sessionId = urlParams.get("session_id");
+
+  //   if (sessionId) {
+  //     const response = await axios(`/api/checkout-session/${sessionId}`);
+  //     const session = await response.json();
+  //     console.log(session);
+  //   }
+
+  //   // console.log("result:" , result)
+  //   // if (error) {
+  //   //   console.error("error:", error);
+  //   // }
+  // };
+
   const handlePayment = async () => {
-    const stripe = stripePromise;
-    const res = await axios.post("/payments/create-checkout-session", {
-      products: cart,
-      coupon: coupon ? coupon.code : null,
-    });
-    const session = res.data;
-    const result = await stripe.redirectToCheckout({
-      sessionId: session.id,
-    });
-    if(result.error){
-      console.error("error:" , result.error)
+    try {
+      const stripe = await stripePromise;
+  
+      const res = await axios.post("/payments/create-checkout-session", {
+        products: cart,
+        coupon: coupon ? coupon.code : null,
+      });
+  
+      const session = res.data;
+  
+      // Redirect to Stripe Checkout
+      await stripe.redirectToCheckout({ sessionId: session.id });
+    } catch (error) {
+      console.error("Payment error:", error);
     }
   };
+  
 
   return (
     <motion.div

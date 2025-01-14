@@ -76,7 +76,7 @@ export const createCheckoutSession = async (req, res) => {
       await createNewCoupon(req.user._id);
     }
 
-    res.status(200).json({ id: session.id, totalAmount: totalAmount / 100 });
+    res.status(200).json({ id: session.id, totalAmount: totalAmount / 100 , url: session.success_url || session.cancel_url });
   } catch (error) {
     console.log("Error inside the update create checkout session controller");
     res.status(500).json({ message: "server error", error: error.message });
