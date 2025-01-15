@@ -3,16 +3,25 @@ import User from "../models/user.model.js";
 
 export const getCartProducts = async (req, res) => {
   try {
-    const products = await Product.find({ _id: { $in: req.user.cartItems } });
+    // const products = await Product.find({
+    //   _id: { $in: req.user.cartItems.map((item) => item.product) },
+    // }).lean()
 
-    const cartItems = products.map((product) => {
-      const item = req.user.cartItems.find(
-        (cartItem) => cartItem.id === productId
-      );
-      return { ...product.toJSON(), quantity: item.quantity };
-    });
+    // console.log("error agya hai" , products)
 
-    res.json(cartItems);
+    // const cartItems = products.map((product) => {
+    //   const item = req.user.cartItems.find(
+    //     (cartItem) => cartItem.id === productId
+    //   );
+    //   return { ...product.toJSON(), quantity: item.quantity };
+    // });
+
+    const user = await User.findById(req.user._id).populate(
+      "cartItems.product"
+    );
+
+    res.json(user.cartItems);
+    console.log("this is the products in the cart", user.cartItems);
   } catch (error) {
     console.log("Error inside the getcartprod controller");
     res.status(500).json({ message: "server error", error: error.message });
@@ -35,7 +44,6 @@ export const addToCart = async (req, res) => {
     if (existingItem) {
       existingItem.quantity += 1;
     } else {
-      // thisUser.cartItems.push(productId);
       thisUser.cartItems.push({ product: productId, quantity: 1 });
     }
     await thisUser.save();
@@ -73,14 +81,16 @@ export const updateQuantity = async (req, res) => {
     const user = await User.findById(req.user._id);
 
     // const existingItem = user.cartItems.find((item) => item.id === productId);
-    const existingItem = user.cartItems.find((item) => item.product.toString() === productId);
+    const existingItem = user.cartItems.find(
+      (item) => item.product.toString() === productId
+    );
 
     console.log("updqua:", existingItem);
 
     if (existingItem) {
       if (quantity === 0) {
         user.cartItems = user.cartItems.filter((item) => item.id !== productId);
-        console.log("after the updation")
+        console.log("after the updation");
         await user.save();
         return res.json(user.cartItems);
       }

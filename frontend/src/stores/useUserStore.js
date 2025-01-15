@@ -30,6 +30,7 @@ export const useUserStore = create((set, get) => ({
       const res = await axios.post("/auth/login", { email, password });
       // console.log("checking the user state"  , res.data)
       set({ user: res.data, loading: false });
+      toast.success("Log In Successfull!")
     } catch (error) {
       set({ loading: false });
       toast.error(error.message || "An error occured");
@@ -50,6 +51,7 @@ export const useUserStore = create((set, get) => ({
     try {
       await axios.post("/auth/logout");
       set({ user: null });
+      toast.success("Logged Out Successfully!")
     } catch (error) {
         toast.error(error.response?.data?.message || "An error occured during logout")
     }

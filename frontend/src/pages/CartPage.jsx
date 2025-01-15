@@ -21,6 +21,8 @@ const CartPage = () => {
 						transition={{ duration: 0.5, delay: 0.2 }}
 					>
 						{cart.length === 0 ? (
+
+							
 							<EmptyCartUI />
 						) : (
 							<div className='space-y-6'>
