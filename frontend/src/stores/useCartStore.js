@@ -12,9 +12,9 @@ export const useCartStore = create((set, get) => ({
   getCartItems: async () => {
     try {
       const res = await axios.get("/cart");
-      set({ cart: res.data });
+      console.log("THIS IS THE GET CART ITEMS RES:", res.data.product)
+      set({ cart: product });
       get().calculateTotals();
-      console.log("THIS IS THE GET CART ITEMS RES:", res.data)
     } catch (error) {
       set({ cart: [] });
       toast.error(error.response.data.message || "An error occured");
@@ -24,7 +24,7 @@ export const useCartStore = create((set, get) => ({
   addToCart: async (product) => {
     try {
       await axios.post("/cart", { productId: product._id });
-      console.log("add to cart store"  ,product)
+      console.log("add to cart store"  ,product, product.image)
       toast.success("Product added to cart");
 
       set((prevState) => {
@@ -37,7 +37,9 @@ export const useCartStore = create((set, get) => ({
                 ? { ...item, quantity: item.quantity + 1 }
                 : item
             )
-          : [...prevState.cart, { ...product, quantity: 1 }];
+          : [...prevState.cart, {  product: {
+            ...product, // Normalize the product structure
+          }, quantity: 1 }];
         return { cart: newCart };
       });
       get().calculateTotals();
@@ -58,7 +60,7 @@ export const useCartStore = create((set, get) => ({
       const discount = subcount * (coupon.discountPercentage / 100);
       total = subtotal - discount;
     }
-
+    console.log(item.price, total , subtotal)
     set({ subtotal, total });
   },
 
