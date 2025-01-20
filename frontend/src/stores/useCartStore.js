@@ -12,12 +12,19 @@ export const useCartStore = create((set, get) => ({
   getCartItems: async () => {
     try {
       const res = await axios.get("/cart");
-      console.log("THIS IS THE GET CART ITEMS RES:", res.data.product)
-      set({ cart: product });
+      console.log("THIS IS THE GET CART ITEMS RES:", res.data )
+      const cartItems = res.data.map((item) => ({
+        product: item.product, // Ensure this matches your backend structure
+        quantity: item.quantity,
+      }));
+  
+      // Set the cart state
+      set({ cart: cartItems });
+      console.log("yahantak agaaya" , cartItems)
       get().calculateTotals();
     } catch (error) {
       set({ cart: [] });
-      toast.error(error.response.data.message || "An error occured");
+      toast.error(error.data || "An error occured");
     }
   },
 
@@ -51,16 +58,16 @@ export const useCartStore = create((set, get) => ({
   calculateTotals: () => {
     const { cart, coupon } = get();
     const subtotal = cart.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+      (sum, item) => sum + item.product.price * item.quantity,
       0
     );
     let total = subtotal;
-
+    console.log("in the calculatetotals" ,coupon, subtotal ,total)
     if (coupon) {
-      const discount = subcount * (coupon.discountPercentage / 100);
+      const discount = subtotal * (coupon.discountPercentage / 100);
       total = subtotal - discount;
     }
-    console.log(item.price, total , subtotal)
+    console.log(total , subtotal)
     set({ subtotal, total });
   },
 

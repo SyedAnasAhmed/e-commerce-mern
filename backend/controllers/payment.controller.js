@@ -18,6 +18,8 @@ export const createCheckoutSession = async (req, res) => {
       const amount = Math.round(product.price * 100); //stripe wants amount in cents
       totalAmount += amount * product.quantity;
 
+      // console.log("under the line items")
+
       return {
         price_data: {
           currency: "usd",
@@ -31,6 +33,7 @@ export const createCheckoutSession = async (req, res) => {
       };
     });
 
+    
     let coupon = null;
     if (couponCode) {
       coupon = await Coupon.findOne({
@@ -38,14 +41,15 @@ export const createCheckoutSession = async (req, res) => {
         userId: req.user._id,
         isActive: true,
       });
-
+      
+      
       if (coupon) {
         totalAmount -= Math.round(
           (totalAmount * coupon.discountPercentage) / 100
         );
       }
     }
-
+    
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
@@ -64,13 +68,14 @@ export const createCheckoutSession = async (req, res) => {
         couponCode: couponCode || "",
         products: JSON.stringify(
           products.map((p) => ({
-            id: p._id,
-            quantity: p.quantity,
-            price: p.price,
+            id: p.product._id, // Access `_id` from `product`
+            quantity: p.quantity, // Quantity remains as-is
+            price: p.product.price, // Access `price` from `product`
           }))
         ),
       },
     });
+    
 
     if (totalAmount >= 20000) {
       await createNewCoupon(req.user._id);
